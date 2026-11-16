@@ -17,6 +17,10 @@ from typing import Callable, Iterable, Protocol, Sequence
 
 
 _TOKEN_RE = re.compile(r"[A-Za-z0-9]+")
+_STOPWORDS = {
+    "a", "an", "and", "are", "before", "does", "for", "how", "in", "is",
+    "of", "on", "the", "to", "what", "when", "where", "which", "who",
+}
 
 
 def tokenize(text: str) -> list[str]:
@@ -190,7 +194,7 @@ def _extractive_answer(question: str, results: Sequence[RetrievalResult]) -> str
 
     if not results:
         return "I could not find evidence to answer this question."
-    terms = set(tokenize(question))
+    terms = set(tokenize(question)) - _STOPWORDS
     candidates: list[tuple[float, str, str]] = []
     for result in results:
         sentences = re.split(r"(?<=[.!?])\s+", result.document.text.strip())
@@ -242,4 +246,3 @@ class RAGSystem:
         text = self.generator(question, sources)
         elapsed = (time.perf_counter() - started) * 1000
         return Answer(question, text, sources, elapsed)
-
